@@ -1,0 +1,464 @@
+1. The Problem Statement (PS)
+Core problem statement: Develop a secure, centralized, scalable and user-friendly Security Deposit/Fixed Deposit Receipt (FDR) Management Portal for the All India Council for Technical Education (AICTE) that streamlines the complete lifecycle of security deposits and FDRs associated with applicable institutional approval and compliance processes.
+
+The platform must enable AICTE-approved institutions to submit financial instrument details and supporting documents, allow authorized officials to review and verify those records, automatically monitor maturity and renewal deadlines, track replacement instruments, manage release or refund requests through authorized approval workflows, and generate real-time dashboards and regulatory reports.
+
+The system should improve record accuracy, reduce repetitive manual work, minimize avoidable administrative delays and provide transparent, auditable oversight of financial instruments.
+
+The central objective is to establish one reliable source of information for every deposit and FDR, from initial submission through verification, renewal and eventual release.
+
+The solution should combine conventional software engineering, automation and appropriate AI technologies while maintaining strict security, privacy, regulatory compliance and human oversight of financial decisions.
+
+The scope includes:
+- Centralized institution-wise and instrument-wise records.
+- Secure document submission, storage and retrieval.
+- Automated validation and discrepancy detection.
+- OCR-based extraction of information from FDR documents.
+- Validity and maturity monitoring with configurable notifications.
+- Renewal, replacement and release/refund workflows.
+- Dashboards, reports, access control and audit trails.
+- Integration capability for existing AICTE systems and authorized bank-verification services.
+The prototype must demonstrate the end-to-end workflow using realistic test scenarios. Where actual AICTE or bank integrations are unavailable, simulated data and verification results must be clearly identified as such.
+
+2. Comprehensive Research Summary
+2.1 Background and core operational challenge
+AICTE regulates technical institutions through applicable approval requirements, regulations and administrative procedures. Depending on the relevant requirements, institutions may need to submit or maintain security deposits or FDRs.
+
+Managing these instruments involves more than maintaining a list of documents. Each instrument has financial details, validity dates, verification requirements, supporting records and administrative actions associated with it.
+
+The key challenge is maintaining accurate, current and traceable information across the complete lifecycle.
+
+For example, when an institution submits an FDR, officials need to establish what the institution has declared, what information appears on the document, whether the instrument has been independently verified, when action is required and whether the relevant regulatory conditions have been fulfilled.
+
+If an instrument is renewed, the system must connect the replacement with the previous instrument. If a release request is submitted, it must track the request and preserve the authorization history.
+
+A fragmented process can create duplicated records, inconsistent information, missed deadlines, delayed reviews and limited visibility into pending cases.
+2.2 Functional requirements identified
+The requirements in the problem statement can be organized into eight functional areas.
+Functional area	Required capability
+Record management	Maintain institution-wise and instrument-wise records of FDRs and security deposits.
+Document management	Upload, store, retrieve and review FDRs and supporting documents securely.
+Verification	Record verification evidence, identify inconsistencies and distinguish submitted information from independently confirmed information.
+Validity monitoring	Track issue dates, maturity dates, validity status and applicable deadlines.
+Renewal management	Track renewed or replacement instruments and retain historical relationships.
+Release/refund workflow	Submit, review and track requests through authorized approval procedures.
+Alerts and reporting	Generate reminders, escalate unresolved cases and produce dashboards and regulatory reports.
+Security and interoperability	Enforce access controls, encryption, audit trails and authorized integration with existing systems.
+
+These functions form the baseline against which the proposed solution should be evaluated.
+2.3 What the system must distinguish
+One of the most important architectural findings is that the system should not treat all information as equally trustworthy.
+Submitted information
+
+Details entered by the institution, including the declared FDR number, amount and dates.
+
+
+
+Extracted information
+
+Fields read from the uploaded document by OCR or document parsing. These may contain extraction errors and must be checked.
+
+
+
+Verified information
+
+Information confirmed through an authorized bank or financial source, or reviewed through a documented verification process. The verification method and evidence should be recorded.
+
+
+
+Approved action
+
+A formal decision made by an authorized official under the applicable procedure. Verification does not itself imply approval for a release or refund.
+
+
+
+This distinction is fundamental to preventing the portal from accidentally presenting unverified or AI-extracted information as an established financial fact.
+2.4 AI feasibility assessment
+Overall assessment: Feasible, with AI supporting selected tasks rather than replacing the complete regulatory workflow.
+
+The project does not require a custom AI model to be useful. Existing OCR tools, standard Python validation logic, database constraints, scheduled tasks and established authentication mechanisms can deliver most of the required functionality.
+
+AI is most valuable where information must be extracted from variable document layouts, unusual patterns need to be highlighted, or lengthy case documents need to be summarized.
+Capability	Recommended approach	Feasibility
+Read FDR documents	OCR and document parsing	High, subject to document quality
+Compare extracted and entered values	Deterministic validation rules	High
+Detect duplicate references	Database constraints and matching rules	High
+Detect unusual records	Rules initially; anomaly detection if data supports it	Moderate to high
+Monitor maturity dates	Date calculations and scheduled jobs	High
+Send reminders and escalations	Notification service and workflow rules	High
+Summarize cases or approved policies	Existing language model, optionally with retrieval-augmented generation (RAG)	Feasible, with factuality controls
+Verify FDR authenticity	Authorized bank-verification mechanisms	Dependent on access and integration
+Approve financial releases	Authorized workflow and human decision	Must follow applicable procedures
+
+A. Computer vision and OCR
+OCR can convert scanned or image-based FDRs into machine-readable text. Document parsing can then identify fields such as the issuing bank, instrument reference, deposit amount, issue date and maturity date.
+
+Potential tools include:
+- Tesseract OCR.
+- PaddleOCR.
+- PyMuPDF or pdfplumber for PDFs that contain extractable text.
+- A pretrained document-understanding model if simpler extraction methods do not perform adequately.
+The system should retain field-level confidence information and, where possible, the source location in the document. Low-confidence fields should be sent for human review.
+B. Rule-based validation and anomaly detection
+The first validation layer should use explicit rules:
+- Required fields are present.
+- Dates are valid and logically consistent.
+- Extracted amounts match the declared amounts.
+- Reference numbers are not duplicated where uniqueness is expected.
+- Renewal records link to the correct previous instrument.
+- Required actions are not overdue.
+- Records that conflict with applicable business rules are flagged.
+An anomaly-detection model, such as Isolation Forest, could later identify unusual patterns in suitable numerical or categorical features. It should not be introduced without representative data and evaluation.
+
+An anomaly score is an indication for investigation, not proof of fraud or invalidity.
+C. Generative AI
+A language model can help officials understand lengthy case histories, summarize discrepancies, draft reminder messages and answer questions about approved policy documents.
+
+If a policy assistant is included, retrieval-augmented generation should retrieve relevant, authorized source documents and present citations. Regulatory decisions should remain based on the actual applicable requirements, not unsupported model-generated interpretations.
+D. Predictive analytics
+Predicting which cases are likely to become overdue is a possible future enhancement. It would require historical records of submissions, deadlines, follow-ups and outcomes.
+
+For the initial prototype, explicit deadline rules are more reliable, transparent and easier to demonstrate than a predictive model.
+2.5 Data requirements and sources
+The system requires both structured records and unstructured documents.
+Data category	Examples	Purpose
+Institution data	Institution identifier, name, approval reference and contact details	Identify the responsible institution
+Instrument data	FDR reference, bank, amount, issue date and maturity date	Track the financial instrument
+Document data	Uploaded PDF/image, file metadata and checksum	Preserve supporting evidence
+Extraction data	OCR fields, confidence scores and corrections	Support automated document processing
+Verification data	Source, result, timestamp, reference and reviewer	Record verification evidence
+Workflow data	Renewal requests, release requests, observations and decisions	Track administrative progress
+Notification data	Recipient, deadline, delivery status and retry history	Demonstrate reminder reliability
+Audit data	Actor, action, timestamp and change history	Maintain accountability
+
+For a hackathon, the dataset can consist of synthetic institutions and synthetic FDR documents with deliberately introduced errors. These could include mismatched amounts, missing fields, duplicated references, invalid dates, approaching maturity and replacement instruments.
+
+For a production system, actual records, regulatory rules and verification data would require authorized access and appropriate data-governance arrangements.
+2.6 Recommended technology stack
+The stack should be straightforward enough to implement rapidly while supporting a future production architecture.
+Layer	Recommended technology
+Frontend	HTML, CSS and JavaScript; React if useful
+Backend	Django and Django REST Framework
+Database	MySQL or PostgreSQL
+Document storage	Private file storage for the prototype; private object storage for production
+OCR	Tesseract or PaddleOCR
+PDF processing	PyMuPDF or pdfplumber
+Validation	Python rules and database constraints
+Anomaly detection	scikit-learn, if justified by data
+Background jobs	Celery and Redis, or a simpler scheduler for a small demo
+Dashboard	Chart.js or equivalent
+Authentication	Django authentication and role-based access control
+Notifications	Email and in-app notification services
+Optional AI assistant	Existing LLM with controlled retrieval over approved documents
+
+A modular Django application is an appropriate starting point. It allows the team to deliver the core system first and add AI capabilities incrementally.
+2.7 Security, privacy and governance
+The platform handles confidential institutional and financial information, so security must be incorporated from the beginning.
+
+The proposed controls include:
+- Role-based permissions for institutions, reviewers and administrators.
+- Secure authentication and appropriate session management.
+- Encryption in transit and at rest.
+- Restricted document downloads and private storage.
+- File-type validation, upload-size limits and malware scanning.
+- Audit logs for submissions, edits, verification results and approvals.
+- Backup, recovery and retention procedures.
+- Configurable regulatory rules with controlled updates.
+- Human review of uncertain OCR outputs and suspicious records.
+- Clearly identified simulated results during prototype demonstrations.
+The system should not automatically release funds, declare a document genuine from its appearance alone, or treat a missing external verification response as proof of fraud.
+2.8 Evaluation and success criteria
+The problem statement expects measurable improvements, not merely a working interface.
+
+The evaluation should establish a baseline and compare manual processing with the proposed workflow.
+Metric	Evaluation method
+OCR field accuracy	Compare extracted fields with manually verified ground truth
+Discrepancy detection precision	Measure how many flagged issues are genuine issues
+Discrepancy detection recall	Measure how many known issues the system catches
+Deadline monitoring reliability	Check that all configured reminders are generated correctly
+Duplicate detection	Test known duplicates and legitimate distinct instruments
+Processing time	Compare manual and automated processing times
+Workflow turnaround	Measure time spent in submission, review and approval stages
+Audit completeness	Verify that important actions and decisions are traceable
+
+No numerical improvement should be claimed until the prototype has been tested against a defined dataset and baseline.
+3. Structured Workflow & Architecture
+The recommended implementation is organized into seven phases, from defining the data and business rules through AI integration, deployment and evaluation.
+3.1 End-to-end system workflow
+The complete workflow should operate as follows:
+#chatgpt-mermaid-_r_o0_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(237, 237, 237);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-_r_o0_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-_r_o0_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-_r_o0_ .error-icon{fill:rgb(48, 48, 48);}#chatgpt-mermaid-_r_o0_ .error-text{fill:rgb(237, 237, 237);stroke:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-_r_o0_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-_r_o0_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-_r_o0_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-_r_o0_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-_r_o0_ .marker{fill:rgb(175, 175, 175);stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_o0_ .marker.cross{stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_o0_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-_r_o0_ p{margin:0;}#chatgpt-mermaid-_r_o0_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .cluster-label text{fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .cluster-label span{color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-_r_o0_ .label text,#chatgpt-mermaid-_r_o0_ span{fill:rgb(237, 237, 237);color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .node rect,#chatgpt-mermaid-_r_o0_ .node circle,#chatgpt-mermaid-_r_o0_ .node ellipse,#chatgpt-mermaid-_r_o0_ .node polygon,#chatgpt-mermaid-_r_o0_ .node path{fill:rgb(9, 23, 44);stroke:rgb(31, 78, 148);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .rough-node .label text,#chatgpt-mermaid-_r_o0_ .node .label text,#chatgpt-mermaid-_r_o0_ .image-shape .label,#chatgpt-mermaid-_r_o0_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-_r_o0_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .rough-node .label,#chatgpt-mermaid-_r_o0_ .node .label,#chatgpt-mermaid-_r_o0_ .image-shape .label,#chatgpt-mermaid-_r_o0_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-_r_o0_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-_r_o0_ .root .anchor path{fill:rgb(175, 175, 175)!important;stroke-width:0;stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_o0_ .arrowheadPath{fill:rgb(175, 175, 175);}#chatgpt-mermaid-_r_o0_ .edgePath .path{stroke:rgb(175, 175, 175);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .flowchart-link{stroke:rgb(175, 175, 175);fill:none;}#chatgpt-mermaid-_r_o0_ .edgeLabel{background-color:rgb(0, 0, 0);text-align:center;}#chatgpt-mermaid-_r_o0_ .edgeLabel p{background-color:rgb(0, 0, 0);}#chatgpt-mermaid-_r_o0_ .edgeLabel rect{opacity:0.5;background-color:rgb(0, 0, 0);fill:rgb(0, 0, 0);}#chatgpt-mermaid-_r_o0_ .labelBkg{background-color:rgba(0, 0, 0, 0.5);}#chatgpt-mermaid-_r_o0_ .cluster rect{fill:rgb(48, 48, 48);stroke:rgba(255, 255, 255, 0.15);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .cluster text{fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ .cluster span{color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(48, 48, 48);border:1px solid rgba(255, 255, 255, 0.15);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-_r_o0_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_o0_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-_r_o0_ .icon-shape,#chatgpt-mermaid-_r_o0_ .image-shape{background-color:rgb(0, 0, 0);text-align:center;}#chatgpt-mermaid-_r_o0_ .icon-shape p,#chatgpt-mermaid-_r_o0_ .image-shape p{background-color:rgb(0, 0, 0);padding:2px;}#chatgpt-mermaid-_r_o0_ .icon-shape .label rect,#chatgpt-mermaid-_r_o0_ .image-shape .label rect{opacity:0.5;background-color:rgb(0, 0, 0);fill:rgb(0, 0, 0);}#chatgpt-mermaid-_r_o0_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-_r_o0_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-_r_o0_ .node .neo-node{stroke:rgb(31, 78, 148);}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node rect,#chatgpt-mermaid-_r_o0_ [data-look="neo"].cluster rect,#chatgpt-mermaid-_r_o0_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-_r_o0_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_o0_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-_r_o0_-gradient);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node .neo-line path{stroke:rgb(31, 78, 148);filter:none;}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-_r_o0_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_o0_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-_r_o0_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-_r_o0_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_o0_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-_r_o0_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_o0_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(153, 206, 255);}#chatgpt-mermaid-_r_o0_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(153, 206, 255);}#chatgpt-mermaid-_r_o0_ .node tspan[font-weight="normal"],#chatgpt-mermaid-_r_o0_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-_r_o0_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(0, 14, 26);stroke:rgb(26, 62, 95);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .node rect,#chatgpt-mermaid-_r_o0_ .node circle,#chatgpt-mermaid-_r_o0_ .node ellipse,#chatgpt-mermaid-_r_o0_ .node polygon,#chatgpt-mermaid-_r_o0_ .node path{fill:rgb(0, 40, 77);stroke:rgba(255, 255, 255, 0.1);stroke-width:1px;}#chatgpt-mermaid-_r_o0_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-_r_o0_ .node.mermaid-decision .label-container{fill:rgb(0, 14, 26);stroke:rgb(26, 62, 95);stroke-dasharray:2,2;}#chatgpt-mermaid-_r_o0_ .edgePaths .flowchart-link{stroke:rgb(175, 175, 175);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-_r_o0_ .marker{fill:rgb(175, 175, 175);stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_o0_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Institution LoginSubmit FDR Details andDocumentSecure Document StorageOCR and Field ExtractionValidate Fields and CompareValuesValidation ResultFlag for Correction or ReviewAwait Authorized VerificationInstitution Correction orOfficial ReviewRecord Verification Evidenceand StatusCentral FDR RepositoryMaturity Monitoring andNotificationsRenewal and ReplacementWorkflowRelease or Refund RequestAICTE Dashboard and ReportsAuthorized Official ReviewRecord Approval or RejectionAudit Trail and ReportingMissing or Mismatched DataPassed Initial Checks
+
+
+
+
+
+Passing the initial validation checks must not automatically mark an FDR as genuine. The workflow must retain an explicit verification stage.
+Phase 1: Data and requirements foundation
+Objective: Define the data, applicable business rules and permitted user actions before building the application.
+
+Work to complete:
+1. Identify the institution, instrument, document, verification, renewal, release-request and audit entities.
+2. Define the required and optional fields for each record.
+3. Establish allowed status transitions, such as submitted, under review, flagged, verified, renewed and released.
+4. Identify the applicable AICTE regulations and approval procedures that govern deposit maintenance and release.
+5. Define which roles may submit, correct, verify, approve and release records.
+6. Prepare synthetic test data and sample FDR documents.
+Deliverable: A documented data schema, business-rule specification and set of sample records.
+
+Completion criterion: Every required field, workflow state and permission has a defined purpose and validation rule.
+Phase 2: Core portal and database
+Objective: Create a functional application before introducing AI.
+
+Build:
+- Institution and administrator login.
+- Institution-wise FDR submission forms.
+- Secure document upload and retrieval.
+- Searchable FDR records and status filters.
+- Basic administrative dashboard.
+- Database relationships and constraints.
+- Role-based permissions and audit logging.
+The core data model should maintain a unique internal identifier for each instrument. A bank reference number should be subject to the appropriate duplicate checks, rather than assumed globally unique without considering bank and instrument context.
+
+Deliverable: A working portal that stores, retrieves and manages FDR records.
+
+Completion criterion: An institution can submit a record, and an authorized official can retrieve it, review it and record an action.
+Phase 3: OCR and document intelligence
+Objective: Reduce manual entry by extracting information from uploaded FDRs.
+
+Processing pipeline:
+1. Accept PDF and image uploads.
+2. Validate the file and securely store the original.
+3. Extract embedded PDF text when available; otherwise run OCR.
+4. Parse the relevant fields.
+5. Normalize dates, currency values and reference numbers.
+6. Store extracted fields, confidence scores and document references.
+7. Compare extracted values with the institution's form entries.
+8. Route low-confidence or inconsistent values to a reviewer.
+Model strategy: Start with existing OCR tools and lightweight parsing logic. Test a pretrained document-understanding model only if the initial method fails to handle the sample documents adequately.
+
+Deliverable: An extraction interface that presents the original document alongside its extracted fields and flags uncertain values.
+
+Completion criterion: Performance is measured against a labelled test set, including poor-quality scans and different document layouts.
+Phase 4: Validation and anomaly detection
+Objective: Identify incomplete, inconsistent or unusual records.
+
+Implement the validation engine in two layers.
+
+Layer 1 — Deterministic checks
+- Required-field validation.
+- Date and amount consistency.
+- Duplicate reference detection.
+- Replacement-instrument linkage.
+- Applicable deadline and compliance checks.
+- Document-to-form comparison.
+Layer 2 — Optional intelligent checks
+- Anomaly scoring for unusual records.
+- Fuzzy matching for possible duplicate records with formatting differences.
+- Prioritization of cases for manual review.
+The system should return an explainable result containing the issue, evidence, severity and recommended next action. Any severity classification should be based on documented rules, not an unexplained model score.
+
+Deliverable: A validation engine that produces actionable review findings.
+
+Completion criterion: Known errors are detected at measured precision and recall, with acceptable false-positive rates.
+Phase 5: Monitoring, notifications and lifecycle workflows
+Objective: Ensure that instruments and related actions remain visible throughout their lifecycle.
+
+Implement:
+- Scheduled maturity and deadline checks.
+- Configurable reminder intervals.
+- In-app and email notifications.
+- Notification delivery tracking and retry handling.
+- Escalation of unresolved cases.
+- Renewal and replacement history.
+- Release/refund request submission and review.
+- Authorized approval or rejection.
+- Audit history for all material changes.
+A replacement instrument must be linked to its predecessor rather than simply overwriting the original record.
+
+Deliverable: An end-to-end workflow for maturity monitoring, renewal and release requests.
+
+Completion criterion: Test cases demonstrate correct reminders, preserved instrument history and controlled approval transitions.
+Phase 6: Dashboard, reporting and integrations
+Objective: Provide oversight to AICTE officials and enable future interoperability.
+
+The dashboard should include:
+- Active, expiring, matured, renewed and released instruments.
+- Total recorded deposit value, with clear definitions of what is included.
+- Pending verifications and flagged discrepancies.
+- Overdue renewal actions.
+- Pending and completed release requests.
+- Institution-wise reports and downloadable summaries.
+Create documented APIs for record submission, permitted updates, status retrieval and reporting. Design adapters for authorized bank verification and existing AICTE systems, without assuming that external access is already available.
+
+Deliverable: A consolidated dashboard, reports and documented integration interfaces.
+
+Completion criterion: Dashboard values reconcile with the underlying database, and access restrictions apply consistently to both the user interface and APIs.
+Phase 7: Testing, deployment and evaluation
+Objective: Demonstrate that the complete system is reliable, secure and useful.
+
+Test:
+- Valid FDR submission.
+- Missing or inconsistent fields.
+- Duplicate reference numbers.
+- Low-quality scans and OCR errors.
+- Approaching and passed maturity dates.
+- Renewal and replacement records.
+- Pending and failed notifications.
+- Release approval and rejection.
+- Unauthorized record access.
+- File-upload security and recovery from failures.
+Deploy the prototype in a controlled environment with synthetic data. Document the system's limitations, configuration, test results and instructions for running the demonstration.
+
+Deliverable: A working prototype, test report, deployment instructions and evaluation metrics.
+
+Completion criterion: The complete workflow runs end to end, important security controls are tested, and all simulated integrations are clearly identified.
+3.2 Unified technical architecture
+The architecture can be organized into six layers.
+1. User Interface
+
+Institution Portal · AICTE Admin Portal · Reports
+
+2. API and Security Layer
+
+Authentication · Role Permissions · Input Validation · API Controls
+
+3. Business Logic Layer
+
+FDR Management · Validation Rules · Renewal Workflow · Release Workflow
+
+Document AI
+
+OCR · Parsing · Confidence Checks
+
+
+Automation
+
+Deadlines · Alerts · Escalation
+
+
+
+4. Data Layer
+
+Relational Database · Private Document Storage · Audit Logs
+
+5. Integration Layer
+
+Authorized Bank APIs · AICTE Systems · Email Services
+
+
+Cross-cutting security, monitoring, backup and governance controls should apply to every layer.
+3.3 Recommended implementation order
+For a limited hackathon timeline, prioritize features according to dependency and demonstration value:
+1. Must have: Authentication, FDR submission, database, document storage, dashboard and basic validation.
+2. Must have: Maturity tracking, reminders, renewal history, release workflow and audit trail.
+3. Core AI differentiator: OCR extraction, confidence display and discrepancy detection.
+4. Important quality work: Role permissions, edge-case tests, notification reliability and performance evaluation.
+5. Optional enhancements: Anomaly-detection model, generative AI case summaries, advanced analytics and external integrations.
+This ordering ensures that the project remains useful even if an advanced AI feature proves less accurate than expected.
+
+4. Missing Pieces
+The proposed architecture covers the major functional requirements, but several areas remain unresolved. These are not reasons to stop development; they are decisions and dependencies that should be addressed before the solution can be considered complete.
+4.1 Regulatory and business-rule clarification
+The problem statement refers to applicable AICTE regulations and procedures but does not specify the exact rules governing every deposit type.
+
+Questions to resolve:
+- Which categories of institutions and approval processes require security deposits or FDRs?
+- What are the applicable amounts, validity requirements and renewal deadlines?
+- What conditions must be satisfied before a deposit can be released?
+- Who has authority to verify, approve or reject each type of request?
+- What supporting documents are required for each workflow?
+Required next step: Obtain the relevant current AICTE regulations, approval-process handbook provisions and authorized internal procedures. Convert the applicable requirements into configurable, version-controlled business rules.
+
+Do not invent universal rules where requirements differ by institution or approval category.
+4.2 Access to genuine FDR documents and verification sources
+The team needs to establish what data it can legally and practically use.
+
+Outstanding questions include:
+- Can representative FDR documents be obtained for development and testing?
+- Are there approved bank-verification APIs, reference-based verification services or other official mechanisms?
+- Will AICTE provide access to an existing institutional database or portal?
+- What authentication, permissions and approval processes govern integration?
+Required next step: Use synthetic documents for initial development, then evaluate against appropriately authorized representative documents. Design a verification adapter so the prototype can use mock responses while a future production deployment connects to a real authorized service.
+4.3 Dataset quality and AI model evaluation
+OCR and anomaly detection have been proposed, but their achievable accuracy has not yet been established.
+
+The following information is still needed:
+- The number and diversity of available FDR document layouts.
+- The proportion of scanned, digitally generated, rotated and low-quality documents.
+- The accuracy of OCR extraction for amounts, dates and reference numbers.
+- Representative examples of genuine discrepancies and legitimate variations.
+- Acceptable false-positive and false-negative rates for different types of validation.
+Required next step: Create a labelled test set with expected field values and known discrepancies. Evaluate a baseline OCR pipeline before deciding whether custom model training is necessary.
+
+Do not claim that the system detects forged FDRs unless that capability has been independently validated. Document anomaly detection is not equivalent to financial authenticity verification.
+4.4 Detailed workflow and status definitions
+The system needs an explicit state model for every instrument and request.
+
+For example, an instrument might be submitted, awaiting verification, flagged, verified, approaching maturity, matured, renewed or released. These states may overlap conceptually: a verified instrument can also be approaching maturity.
+
+Required next step: Separate the instrument's lifecycle status from verification status, renewal status and release-request status. Define permitted transitions and the conditions for each transition.
+
+This will prevent confusing dashboards and invalid actions—for example, treating a matured FDR as automatically approved for refund.
+4.5 Security and privacy specification
+The architecture identifies essential controls, but production implementation requires more detailed decisions.
+
+Outstanding items include:
+- Authentication requirements and account recovery.
+- Role and permission matrices.
+- Encryption and key management.
+- Document retention and deletion policies.
+- Backup and disaster recovery requirements.
+- Audit-log integrity and access restrictions.
+- Security testing and incident-response procedures.
+- Applicable privacy, cybersecurity and institutional data-handling requirements.
+Required next step: Develop a security specification and threat model before production deployment. Test both the user interface and backend APIs for unauthorized access.
+4.6 Notification delivery and operational reliability
+A scheduled task can identify approaching deadlines, but reliable notification delivery requires additional engineering.
+
+The team needs to decide:
+- Which reminders are sent and how frequently.
+- Who receives each reminder.
+- When unresolved cases are escalated.
+- How failed email deliveries are retried.
+- How duplicate notifications are prevented.
+- How administrators can monitor failed scheduled jobs.
+Required next step: Define configurable reminder policies, record notification delivery attempts and test the system across normal operation, delayed processing and service failures.
+4.7 Deployment and external integration
+The prototype architecture is integration-ready, but actual integration is not yet demonstrated.
+
+Outstanding work includes API contracts, authentication between systems, error handling, data synchronization, hosting decisions, monitoring and recovery.
+
+Required next step: Deploy the prototype in a controlled environment, document its APIs and test integration using mock services. Actual AICTE and bank connections should be treated as separate implementation milestones dependent on formal authorization.
+4.8 Evaluation baselines and acceptance criteria
+The problem statement calls for measurable improvements, but no measured results have been established yet.
+
+Before final evaluation, define:
+- OCR accuracy requirements for critical fields.
+- Acceptable false-positive and false-negative rates.
+- Maximum acceptable reminder delays.
+- Expected processing-time reduction.
+- Required audit coverage.
+- Response-time and availability targets.
+- Security and access-control acceptance tests.
+Required next step: Record a manual-processing baseline and compare it with the prototype using the same test cases. Report the actual results, including limitations and failures.
+4.9 Prioritized gap register
+Priority	Outstanding item	Why it matters
+Critical	Applicable regulatory rules and release conditions	Prevents incorrect compliance decisions
+Critical	Verification evidence and authorized source access	Prevents unsupported authenticity claims
+Critical	Authentication, authorization and audit controls	Protects financial and institutional records
+High	Representative FDR dataset and labelled test cases	Establishes whether OCR and validation work reliably
+High	Instrument and request lifecycle state model	Prevents inconsistent workflows
+High	Notification delivery and failure handling	Makes deadline monitoring operationally useful
+Medium	Predictive analytics and generative AI	Adds value after core functionality is reliable
+Medium	Production deployment and external integration	Enables operational use beyond the prototype
+
+Final research conclusion
+The AICTE Security Deposit/FDR Management Portal is technically feasible using established web technologies, document AI and workflow automation. The strongest approach is to build a reliable management system first and introduce AI where it provides measurable value.
+
+The proposed solution should be judged on three outcomes:
+1. Accuracy: Financial instrument information is captured consistently, discrepancies are identified and verification evidence is preserved.
+2. Timeliness: Maturity deadlines, renewals and pending release requests are visible and acted upon through reliable notifications and controlled workflows.
+3. Accountability: Every important submission, correction, verification and approval can be traced to its source and responsible actor.
+The most important unresolved dependencies are access to applicable regulatory rules, authorized verification mechanisms and representative test data. These should be addressed alongside development, not postponed until the end.
+
+The immediate next milestone should be a working end-to-end prototype using synthetic FDR documents, deterministic validation, OCR-assisted extraction, maturity reminders, a renewal workflow, simulated verification and an auditable release-request process. Once that prototype has been evaluated, the team will have a sound basis for deciding which advanced AI features and external integrations are justified.
